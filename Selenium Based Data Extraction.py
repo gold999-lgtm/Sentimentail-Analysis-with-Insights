@@ -1,24 +1,35 @@
 from selenium import webdriver
 from time import sleep
-import cv2
-import urllib.request
-import numpy as np
-from selenium.common.exceptions import NoSuchElementException
-url="https://www.gettyimages.in/photos/shah-rukh-khan"
-browser=webdriver.Edge(r"C:\Users\Swati Lohiya\Downloads\edgedriver_win64\msedgedriver.exe")
+from bs4 import BeautifulSoup as bs
+from selenium.common.exceptions  import NoSuchElementException
+url="https://www.etsy.com/in-en/listing/546737718/star-ear-crawler-earrings-925-sterling?ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=&ref=sr_gallery-1-8&bes=1"
+browser=webdriver.Chrome("C:/Users/vinod/OneDrive/Desktop/New folder/chromedriver.exe")
 browser.get(url)
-page1=browser.find_element_by_xpath("/html/body/div[2]/section/div/main/div/div/div[3]/div[2]")
-for i in range(100):
-    for j in range(1,5):
+a=[]
+page1=browser.find_element_by_xpath("//*[@id='reviews']/div[2]/nav/ul/li[position()=last()]/a")
+for j in range(1,51):
+    
+    for i in range(4):
         try:
-            img=browser.find_element_by_xpath('/html/body/div[2]/section/div/main/div/div/div[3]/div[2]/div[3]/div['+str(j)+']/article/a/figure/img')
-            urllib.request.urlretrieve(img.get_attribute("src"),"local-filename"+str(i*j)+".jpg")
+            reviews=browser.find_element_by_xpath('//*[@id="review-preview-toggle-'+str(i)+'"]')
+        
+            a.append(reviews.text)
         except NoSuchElementException:
             pass
-    if i==0:
-        page1=browser.find_element_by_xpath("/html/body/div[2]/section/div/main/div/div/div[3]/div[2]/section/a")  
-    else:
-        page1=browser.find_element_by_xpath("/html/body/div[2]/section/div/main/div/div/div[3]/div[2]/section/a[2]")
+            
+    page1=browser.find_element_by_xpath("//*[@id='reviews']/div[2]/nav/ul/li[position()=last()]/a")
     page1.click()
     sleep(4)
-browser.close()
+
+import sqlite3 as sql
+import pandas as pd
+df=pd.DataFrame()
+df["reviews"]=a
+df.to_csv("real_reviews2.csv",index=False)
+conn=sql.connect("reviews2.db")
+df.to_sql("real_reviews",conn,index=False)
+curser=conn.cursor()
+curser.execute("SELECT * FROM real_reviews")
+for record in curser:
+    print(record) 
+
